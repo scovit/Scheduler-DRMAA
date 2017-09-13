@@ -1,0 +1,21 @@
+{
+  "authors" : [
+    "Vittore F. Scolari"
+  ],
+  "build-depends" : [ ],
+  "depends" : [ ],
+  "description" : "Bindings for the DRMAA cluster library",
+  "license" : "GPLv3",
+  "name" : "Scheduler::DRMAA",
+  "perl" : "6.c",
+  "provides" : {
+    "DRMAA" : "lib/DRMAA.pm6",
+    "DRMAA::NativeCall" : "lib/DRMAA/NativeCall.pm6",
+    "Scheduler::DRMAA" : "lib/Scheduler/DRMAA.pm6
+  },
+  "resources" : [ ],
+  "source-url" : "",
+  "tags" : [ ],
+  "test-depends" : [ ],
+  "version" : "0.0.1"
+}
