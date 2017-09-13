@@ -1,6 +1,8 @@
 use v6.c;
 unit module DRMAA::NativeCall:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
+# see Scheduler::DRMAA for the documentation
+
 use NativeCall;
 use NativeHelpers::CBuffer;
 

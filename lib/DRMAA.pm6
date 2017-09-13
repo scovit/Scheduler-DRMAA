@@ -1,32 +1,7 @@
 use v6.c;
 unit module DRMAA:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
-
-=begin pod
-
-=head1 NAME
-
-Scheduler::DRMAA - blah blah blah
-
-=head1 SYNOPSIS
-
-  use Scheduler::DRMAA;
-
-=head1 DESCRIPTION
-
-Scheduler::DRMAA is ...
-
-=head1 AUTHOR
-
-Vittore F. Scolari <vittore.scolari@pasteur.fr>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright 2017 Vittore F. Scolari
-
-This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
-
-=end pod
+# see Scheduler::DRMAA for the documentation
 
 use DRMAA::NativeCall;
 use NativeHelpers::CBuffer;

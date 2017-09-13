@@ -1,7 +1,7 @@
 NAME
 ====
 
-Scheduler::DRMAA - blah blah blah
+Scheduler::DRMAA - Bindings for the DRMAA cluster library
 
 SYNOPSIS
 ========
@@ -21,6 +21,6 @@ Vittore F. Scolari <vittore.scolari@pasteur.fr>
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2017 Vittore F. Scolari
+Copyright 2017 Institut Pasteur
 
-This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
+This library is free software; you can redistribute it and/or modify it under the GPL License 3.0.

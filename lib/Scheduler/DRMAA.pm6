@@ -6,7 +6,7 @@ unit class Scheduler::DRMAA:ver<0.0.1>;
 
 =head1 NAME
 
-Scheduler::DRMAA - blah blah blah
+Scheduler::DRMAA - Bindings for the DRMAA cluster library
 
 =head1 SYNOPSIS
 
