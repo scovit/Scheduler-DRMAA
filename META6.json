@@ -11,7 +11,7 @@
   "provides" : {
     "DRMAA" : "lib/DRMAA.pm6",
     "DRMAA::NativeCall" : "lib/DRMAA/NativeCall.pm6",
-    "Scheduler::DRMAA" : "lib/Scheduler/DRMAA.pm6
+    "Scheduler::DRMAA" : "lib/Scheduler/DRMAA.pm6"
   },
   "resources" : [ ],
   "source-url" : "",
