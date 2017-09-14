@@ -1,8 +1,18 @@
 use v6.c;
 unit module X::DRMAA:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
+use NativeHelpers::CBuffer;
+
 role X::DRMAA is Exception {
-    has $.because;
+    has Str $.because;
+
+    submethod BUILD(:because(:$reason)) {
+	if ($reason ~~ Str) {
+	    $!because := $reason;
+	} else {
+	    $!because = $reason.Str;
+	}
+    }
 }
 
 class X::DRMAA::Success does X::DRMAA {

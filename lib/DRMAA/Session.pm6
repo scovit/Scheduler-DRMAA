@@ -13,26 +13,19 @@ class DRMAA::Session {
     method init(Str $contact?) {
 	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :init($contact));
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { $contact-buf.free; $error-buf.free; }
 
 	my $error-num = drmaa_init($contact-buf, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	if ($error-num != DRMAA_ERRNO_SUCCESS) {
-	    fail X::DRMAA::from-code($error-num).new(:because($error-buf));
-	}
-
-	$contact-buf.free; $error-buf.free;
+	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
     }
 
     method exit() is export {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { $error-buf.free; }
 
 	my $error-num = drmaa_exit($error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	if ($error-num != DRMAA_ERRNO_SUCCESS) {
-	    fail X::DRMAA::from-code($error-num).new(:because($error-buf));
-	}
-
-	$error-buf.free;
+	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
     }
-
 }
