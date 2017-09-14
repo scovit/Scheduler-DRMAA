@@ -12,7 +12,7 @@ class DRMAA::Session {
 
     method init(Str $contact?) {
 	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :init($contact));
-	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER, :init("ciao"));
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 
 	my $error-num = drmaa_init($contact-buf, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
