@@ -3,6 +3,8 @@ unit module DRMAA:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>
 
 # see Scheduler::DRMAA for the documentation
 
-use DRMAA::NativeCall;
-use DRMAA::Errors;
 use DRMAA::Session;
+use DRMAA::NativeCall;
+use X::DRMAA;
+use DRMAA::Job-template;
+use DRMAA::Submission;
