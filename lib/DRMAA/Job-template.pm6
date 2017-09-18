@@ -9,10 +9,10 @@ use DRMAA::Submission;
 
 
 class DRMAA::Job-template {
-    has $.jt;
+    has drmaa_job_template_t $.jt;
 
     method attribute(Str $name) is rw {
-	my $jt = self.jt.deref;
+	my $jt = $.jt;
 	my $cached;
         Proxy.new(
             FETCH => method (--> Str) {
@@ -23,7 +23,7 @@ class DRMAA::Job-template {
 		    LEAVE { $attri-buf.free; $value-buf.free; $error-buf.free; };
 
 		    my $error-num = drmaa_get_attribute($jt, $attri-buf, $value-buf, DRMAA_ATTR_BUFFER, $error-buf, DRMAA_ERROR_STRING_BUFFER);
-		    X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+		    die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 
 		    $cached = $value-buf.Str;
 		}
@@ -36,7 +36,7 @@ class DRMAA::Job-template {
 		LEAVE { $attri-buf.free; $value-buf.free; $error-buf.free; };
 
                 my $error-num = drmaa_set_attribute($jt, $attri-buf, $value-buf, $error-buf, DRMAA_ERROR_STRING_BUFFER);
-                X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+                die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 
 		$cached = Any; # Invalidate cache
 		$value
@@ -45,7 +45,7 @@ class DRMAA::Job-template {
     }
 
     method vector-attribute(Str $name) is rw {
-	my $jt = self.jt.deref;
+	my $jt = $.jt;
 	my $cached;
         Proxy.new(
             FETCH => method (--> List) {
@@ -57,20 +57,20 @@ class DRMAA::Job-template {
 		     	    $error-buf.free; };
 
 		    my $error-num = drmaa_get_vector_attribute($jt, $attri-buf, $values, $error-buf, DRMAA_ERROR_STRING_BUFFER);
-		    X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+		    die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 
 		    $cached = (Seq.new($values.deref).map: { LEAVE { .free }; .Str; }).list.eager;
 		}
 		$cached;
 	    },
-            STORE => method (List $value) {
+            STORE => method ($value) {
 		my $attri-buf = CBuffer.new($name);
-		my $value-arr = CArray[CBuffer].new(|($value.map: { CBuffer.new($_) }), CBuffer);
+		my $value-arr = CArray[CBuffer].new(|($value.map: { CBuffer.new($_.Str) }), CBuffer);
 		my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 		LEAVE { $attri-buf.free; .free for $value-arr.Seq; $error-buf.free; };
 
                 my $error-num = drmaa_set_vector_attribute($jt, $attri-buf, $value-arr, $error-buf, DRMAA_ERROR_STRING_BUFFER);
-                X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+                die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 
 		$cached = Any; # Invalidate cache
 		$value
@@ -93,9 +93,9 @@ class DRMAA::Job-template {
     method remote-command()       is rw { given (DRMAA_REMOTE_COMMAND) { LEAVE { .free }; self.attribute($_.Str) } }
     method start-time()           is rw { given (DRMAA_START_TIME) { LEAVE { .free }; self.attribute($_.Str) } }
     method transfer-files()       is rw { given (DRMAA_TRANSFER_FILES) { LEAVE { .free }; self.attribute($_.Str) } }
-    method v-argv()               is rw { given (DRMAA_V_ARGV) { LEAVE { .free }; self.vector-attribute($_.Str) } }
-    method v-email()              is rw { given (DRMAA_V_EMAIL) { LEAVE { .free }; self.vector-attribute($_.Str) } }
-    method v-env()                is rw { given (DRMAA_V_ENV) { LEAVE { .free }; self.vector-attribute($_.Str) } }
+    method argv()                 is rw { given (DRMAA_V_ARGV) { LEAVE { .free }; self.vector-attribute($_.Str) } }
+    method email()                is rw { given (DRMAA_V_EMAIL) { LEAVE { .free }; self.vector-attribute($_.Str) } }
+    method env()                  is rw { given (DRMAA_V_ENV) { LEAVE { .free }; self.vector-attribute($_.Str) } }
     method wct-hlimit()           is rw { given (DRMAA_WCT_HLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wct-slimit()           is rw { given (DRMAA_WCT_SLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wd()                   is rw { given (DRMAA_WD) { LEAVE { .free }; self.attribute($_.Str) } }
@@ -104,13 +104,17 @@ class DRMAA::Job-template {
 	if defined($given) {
 	    $!jt = $given;
 	} else {
-	    $!jt = Pointer[drmaa_job_template_t].new;
+	    my $temp = Pointer[drmaa_job_template_t].new;
+	    $!jt = drmaa_job_template_t.new;
+
 	    my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	    LEAVE { $error-buf.free; }
 
-	    my $error-num = drmaa_allocate_job_template($!jt, $error-buf, DRMAA_ERROR_STRING_BUFFER);
+	    my $error-num = drmaa_allocate_job_template($temp, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	    X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+	    die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+
+	    $!jt = $temp.deref;
 	    True
 	}
     }
@@ -119,11 +123,35 @@ class DRMAA::Job-template {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $error-buf.free; }
 
-	my $error-num = drmaa_delete_job_template($!jt.deref, $error-buf, DRMAA_ERROR_STRING_BUFFER);
+	my $error-num = drmaa_delete_job_template($!jt, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	X::DRMAA::from-code($error-num).new(:because($error-buf)).throw if ($error-num != DRMAA_ERRNO_SUCCESS);
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 	True
     }
 
-    method run(--> DRMAA::Submission) { };
+    method run(--> DRMAA::Submission) {
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	my $jobid-buf = CBuffer.new(DRMAA_JOBNAME_BUFFER);
+	LEAVE { $error-buf.free; $jobid-buf.free; }
+
+	my $error-num = drmaa_run_job($jobid-buf, DRMAA_JOBNAME_BUFFER, $.jt,
+				      $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+
+	DRMAA::Submission.new(job-id => $jobid-buf.Str)
+    };
+
+    method run-bulk(Int $start, Int $end, Int $by --> List) {
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	my $jobid-ptr = Pointer[drmaa_job_ids_t].new;
+	LEAVE { $error-buf.free; drmaa_release_job_ids($jobid-ptr.deref) }
+
+	my $error-num = drmaa_run_bulk_jobs($jobid-ptr, $.jt, $start, $end, $by,
+					    $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+
+	(Seq.new($jobid-ptr.deref).map: { LEAVE { .free }; DRMAA::Submission.new(job-id => .Str) }).list.eager
+    };
 }

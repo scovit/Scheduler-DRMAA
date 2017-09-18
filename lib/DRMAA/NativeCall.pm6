@@ -124,7 +124,7 @@ class drmaa_attr_values_t is repr('CPointer') does Iterator is export {
 class drmaa_job_ids_t is repr('CPointer') does Iterator is export {
     method pull-one {
 	my $value = CBuffer.new(DRMAA_ATTR_BUFFER);
-	drmaa_get_next_job_id(self, $value, DRMAA_ATTR_BUFFER) == DRMAA_ERRNO_SUCCESS ?? $value !! IterationEnd;
+	drmaa_get_next_job_id(self, $value, DRMAA_JOBNAME_BUFFER) == DRMAA_ERRNO_SUCCESS ?? $value !! IterationEnd;
     }
 }
 

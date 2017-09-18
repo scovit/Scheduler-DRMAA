@@ -7,7 +7,13 @@ use DRMAA::NativeCall;
 use X::DRMAA;
 
 class DRMAA::Submission is Promise {
-    has $.jobid;
+    has Str $.job-id;
 
-    method from-jobid(Str $jobid) { };
+    submethod BUILD(:$job-id) {
+	$!job-id = $job-id;
+    }
+
+    method gist {
+	"<DRMAA|$.job-id>"
+    }
 }

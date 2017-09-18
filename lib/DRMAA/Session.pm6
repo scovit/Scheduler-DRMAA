@@ -10,7 +10,7 @@ class DRMAA::Session {
     method new(|) { die "DRMAA::Session is a Singleton, it desn't need to be instantiated" };
     method bless(|) { die "DRMAA::Session is a Singleton, it desn't need to be instantiated" };
 
-    method init(Str $contact?) {
+    method init(:$contact) {
 	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :init($contact));
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $contact-buf.free; $error-buf.free; }
@@ -36,7 +36,7 @@ class DRMAA::Session {
 
 	my $error-num = drmaa_get_attribute_names($values, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 	(Seq.new($values.deref).map: { LEAVE { .free }; .Str; }).list.eager;
     }
 
@@ -47,7 +47,20 @@ class DRMAA::Session {
 
 	my $error-num = drmaa_get_vector_attribute_names($values, $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
-	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 	(Seq.new($values.deref).map: { LEAVE { .free }; .Str; }).list.eager;
     }
+
+    method contact(--> Str) {
+	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER);
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { $contact-buf.free; $error-buf.free; }
+
+	my $error-num = drmaa_get_contact($contact-buf, DRMAA_CONTACT_BUFFER,
+					  $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+	$contact-buf.Str;
+    }
+
 }
