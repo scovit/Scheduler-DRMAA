@@ -28,4 +28,26 @@ class DRMAA::Session {
 
 	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
     }
+
+    method attribute-names(--> List) {
+	my $values = Pointer[drmaa_attr_names_t].new;
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { drmaa_release_attr_names($values.deref); $error-buf.free; }
+
+	my $error-num = drmaa_get_attribute_names($values, $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+	(Seq.new($values.deref).map: { LEAVE { .free }; .Str; }).list.eager;
+    }
+
+    method vector-attribute-names(--> List) {
+	my $values = Pointer[drmaa_attr_names_t].new;
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { drmaa_release_attr_names($values.deref); $error-buf.free; }
+
+	my $error-num = drmaa_get_vector_attribute_names($values, $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+	(Seq.new($values.deref).map: { LEAVE { .free }; .Str; }).list.eager;
+    }
 }

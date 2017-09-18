@@ -96,19 +96,37 @@ sub DRMAA_JS_STATE             is export { CBuffer.new("drmaa_js_state") }
 sub DRMAA_NATIVE_SPECIFICATION is export { CBuffer.new("drmaa_native_specification") }
 sub DRMAA_OUTPUT_PATH          is export { CBuffer.new("drmaa_output_path") }
 sub DRMAA_REMOTE_COMMAND       is export { CBuffer.new("drmaa_remote_command") }
-sub DRMAA_DRMAA_START_TIM      is export { CBuffer.new("drmaa_start_time") }
+sub DRMAA_START_TIME           is export { CBuffer.new("drmaa_start_time") }
 sub DRMAA_TRANSFER_FILES       is export { CBuffer.new("drmaa_transfer_files") }
 sub DRMAA_V_ARGV               is export { CBuffer.new("drmaa_v_argv") }
 sub DRMAA_V_EMAIL              is export { CBuffer.new("drmaa_v_email") }
 sub DRMAA_V_ENV                is export { CBuffer.new("drmaa_v_env") }
 sub DRMAA_WCT_HLIMIT           is export { CBuffer.new("drmaa_wct_hlimit") }
-sub DRMAA_DRMAA_WCT_SLIMIT     is export { CBuffer.new("drmaa_wct_slimit") }
+sub DRMAA_WCT_SLIMIT           is export { CBuffer.new("drmaa_wct_slimit") }
 sub DRMAA_WD                   is export { CBuffer.new("drmaa_wd") }
 
 class drmaa_job_template_t is repr('CPointer') is export { }
-class drmaa_attr_names_t   is repr('CPointer') is export { }
-class drmaa_attr_values_t  is repr('CPointer') is export { }
-class drmaa_job_ids_t      is repr('CPointer') is export { }
+
+class drmaa_attr_names_t is repr('CPointer') does Iterator is export {
+    method pull-one {
+	my $value = CBuffer.new(DRMAA_ATTR_BUFFER);
+	drmaa_get_next_attr_name(self, $value, DRMAA_ATTR_BUFFER) == DRMAA_ERRNO_SUCCESS ?? $value !! IterationEnd;
+    }
+}
+
+class drmaa_attr_values_t is repr('CPointer') does Iterator is export {
+    method pull-one {
+	my $value = CBuffer.new(DRMAA_ATTR_BUFFER);
+	drmaa_get_next_attr_value(self, $value, DRMAA_ATTR_BUFFER) == DRMAA_ERRNO_SUCCESS ?? $value !! IterationEnd;
+    }
+}
+
+class drmaa_job_ids_t is repr('CPointer') does Iterator is export {
+    method pull-one {
+	my $value = CBuffer.new(DRMAA_ATTR_BUFFER);
+	drmaa_get_next_job_id(self, $value, DRMAA_ATTR_BUFFER) == DRMAA_ERRNO_SUCCESS ?? $value !! IterationEnd;
+    }
+}
 
 #-From drmaa.h:177
 #/**
@@ -224,6 +242,37 @@ sub drmaa_set_vector_attribute(drmaa_job_template_t $jt,
 			       CBuffer $name, CArray[CBuffer] $value,
 			       CBuffer $error_diagnosis, size_t $error_diag_len --> int32) is native(LIBDRMAA) is export { * }
 
+#-From drmaa.h:262
+#/**
+# * The function drmaa_get_vector_attribute() SHALL store in @a values an
+# * opaque values string vector containing the values of the vector attribute,
+# * @a name's, value in the given job template.
+# * @addtogroup drmaa_jobt
+# */
+#int drmaa_get_vector_attribute(
+#	drmaa_job_template_t *jt,
+#	const char *name, drmaa_attr_values_t **values,
+#	char *error_diagnosis, size_t error_diag_len
+#	);
+sub drmaa_get_vector_attribute(drmaa_job_template_t $jt,
+                               CBuffer $name, Pointer[drmaa_attr_values_t] $values is rw, 
+			       CBuffer $error_diagnosis, size_t $error_diag_len --> int32) is native(LIBDRMAA) is export { * }
+
+#-From drmaa.h:276
+#/**
+# * The function drmaa_get_attribute_names() SHALL return the set of supported
+# * scalar attribute names in an opaque names string vector stored in
+# * @a values.  This vector SHALL include all required scalar attributes, all
+# * supported optional scalar attributes, all DRM-specific scalar attributes,
+# * and no unsupported optional attributes.
+# */
+#int drmaa_get_attribute_names(
+#	drmaa_attr_names_t **values,
+#	char *error_diagnosis, size_t error_diag_len
+#	);
+sub drmaa_get_attribute_names(Pointer[drmaa_attr_names_t] $values is rw,
+ 			      CBuffer $error_diagnosis, size_t $error_diag_len --> int32) is native(LIBDRMAA) is export { * }
+
 #-From drmaa.h:288
 #/**
 # * The function drmaa_get_vector_attribute_names() SHALL return the set
@@ -272,6 +321,22 @@ sub drmaa_get_next_attr_value(drmaa_attr_values_t $values, CBuffer $value, size_
 #int drmaa_get_next_job_id( drmaa_job_ids_t* values,
 #	char *value, size_t value_len );
 sub drmaa_get_next_job_id(drmaa_job_ids_t $values, CBuffer $value, size_t $value_len --> int32) is native(LIBDRMAA) is export { * }
+
+#-From drmaa.h:315
+#int drmaa_get_num_attr_names( drmaa_attr_names_t* values, size_t *size );
+sub drmaa_get_num_attr_names(drmaa_attr_names_t $values, size_t $size is rw --> int32) is native(LIBDRMAA) is export { * }
+
+#-From drmaa.h:316
+#int drmaa_get_num_attr_values(drmaa_attr_values_t* values, size_t *size );
+sub drmaa_get_num_attr_values(drmaa_attr_values_t $values, size_t $size is rw --> int32) is native(LIBDRMAA) is export { * }
+
+#-From drmaa.h:317
+#int drmaa_get_num_job_ids( drmaa_job_ids_t* values, size_t *size );
+sub drmaa_get_num_job_ids(drmaa_job_ids_t $values, size_t $size is rw --> int32) is native(LIBDRMAA) is export { * }
+
+#-From drmaa.h:318
+#void drmaa_release_attr_names( drmaa_attr_names_t* values );
+sub drmaa_release_attr_names(drmaa_attr_names_t $values) is native(LIBDRMAA)  is export { * }
 
 #-From drmaa.h:319
 #void drmaa_release_attr_values( drmaa_attr_values_t* values );
