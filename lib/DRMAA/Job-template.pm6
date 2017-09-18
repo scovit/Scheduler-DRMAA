@@ -142,7 +142,7 @@ class DRMAA::Job-template {
 	DRMAA::Submission.new(job-id => $jobid-buf.Str)
     };
 
-    method run-bulk(Int $start, Int $end, Int $by --> List) {
+    multi method run-bulk(Int $start, Int $end, Int $by --> List) {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	my $jobid-ptr = Pointer[drmaa_job_ids_t].new;
 	LEAVE { $error-buf.free; drmaa_release_job_ids($jobid-ptr.deref) }
@@ -154,4 +154,8 @@ class DRMAA::Job-template {
 
 	(Seq.new($jobid-ptr.deref).map: { LEAVE { .free }; DRMAA::Submission.new(job-id => .Str) }).list.eager
     };
+
+    multi method run-bulk(Int $size --> List) {
+	self.run-bulk(1, $size, 1);
+    }
 }
