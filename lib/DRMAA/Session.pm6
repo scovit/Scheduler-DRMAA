@@ -31,6 +31,7 @@ class DRMAA::Session {
 		    require ::($module);
 
 		    $native-specification = ::($module);
+		    last;
 		}
 	    }
 	}
