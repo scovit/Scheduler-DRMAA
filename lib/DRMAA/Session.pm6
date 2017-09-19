@@ -35,6 +35,7 @@ class DRMAA::Session {
 		}
 	    }
 	}
+	warn "Failed to find a compatible Native specification plugin in the database, you might want to implement one, patches are wellcome!" unless defined $native-specification;
     }
 
     method exit() is export {
