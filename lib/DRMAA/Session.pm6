@@ -8,10 +8,26 @@ use DRMAA::Native-specification;
 use X::DRMAA;
 
 class DRMAA::Session {
-    my DRMAA::Native-specification $native-specification;
-
     method new(|) { die "DRMAA::Session is a Singleton, it desn't need to be instantiated" };
     method bless(|) { die "DRMAA::Session is a Singleton, it desn't need to be instantiated" };
+
+    my DRMAA::Native-specification $native-specification;
+
+    method native-specification(--> DRMAA::Native-specification) {
+        $native-specification;
+    }
+
+    sub choose-native-specification($drm) {
+       for @DRMAA::Native-specification::Builtin-specifications -> $module, $match {
+          if ($drm ~~ $match) {
+             warn "Using default Native specification plugin, it sucks, please implement one for your configuration, patches are wellcome!"
+                if $module eq "DRMAA::Native-specification::Default";
+
+             require ::($module);
+             return ::($module);
+          }
+       }
+    }
 
     method init(Str :$contact, DRMAA::Native-specification :native-specification(:$ns)) {
 	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :init($contact));
@@ -25,17 +41,8 @@ class DRMAA::Session {
 	if (defined $ns) {
 	    $native-specification = $ns;
 	} else {
-	    my $drm = self.DRM-system;
-	    for %DRMAA::Native-specification::Builtin-specifications.kv -> $module, $match {
-		if ($drm ~~ $match) {
-		    require ::($module);
-
-		    $native-specification = ::($module);
-		    last;
-		}
-	    }
+	    $native-specification = choose-native-specification self.DRM-system;
 	}
-	warn "Failed to find a compatible Native specification plugin in the database, you might want to implement one, patches are wellcome!" unless defined $native-specification;
     }
 
     method exit() is export {
@@ -47,10 +54,6 @@ class DRMAA::Session {
 	fail X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
     }
 
-    method native-specification(--> DRMAA::Native-specification) {
-	$native-specification;
-    }
-    
     method attribute-names(--> List) {
 	my $values = Pointer[drmaa_attr_names_t].new;
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);

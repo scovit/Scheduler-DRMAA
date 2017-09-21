@@ -5,5 +5,7 @@ role DRMAA::Native-specification {
 
 }
 
-our %Builtin-specifications =
-    "DRMAA::Native-specification::SLURM" => /^SLURM/;
+our @Builtin-specifications =
+    "DRMAA::Native-specification::SLURM",      /^SLURM/,
+    "DRMAA::Native-specification::Default",    /.*/;
+
