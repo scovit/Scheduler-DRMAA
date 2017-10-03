@@ -9,22 +9,25 @@ use DRMAA::Session;
 use DRMAA::Submission::Status;
 use X::DRMAA;
 
-class DRMAA::Submission {  # is Awaitable ? Requires v6.d, next version..
+class DRMAA::Submission does Awaitable {
     has Str  $.job-id;
-    has $.result;
     has Supply $.events;
+    has Promise $!done;
 
     submethod BUILD(:$job-id) {
 	$!job-id = $job-id;
 
 	$!events = DRMAA::Session.events.grep: { .id eq $!job-id };
-	$!events.tap: {
-	    if Exception {
-		.throw;
-	    }
+	$!done   = $!events.head(1).Promise; # If there would be more than one event x job,
+	                                     # this would have been just slightly more complex
+    }
 
-	    $!result := $_;
-	};
+    method result {
+	$!done.result;
+    }
+
+    method get-await-handle(--> Awaitable::Handle) {
+	$!done.get-await-handle;
     }
 
     method gist {

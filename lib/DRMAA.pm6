@@ -10,5 +10,5 @@ use DRMAA::Job-template;
 use DRMAA::Submission;
 
 sub await (DRMAA::Submission:D $s) is export {
-    react { whenever $s.events { done; } };
+    $s.result;
 }
