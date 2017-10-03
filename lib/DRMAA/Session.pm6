@@ -130,19 +130,19 @@ class DRMAA::Session {
 
 	    if ($aborted) {
                 $events.emit(
-                   X::DRMAA::Submission::Status::Aborted.new(
-			            :id($jobout-buf.Str),
-		   		    :$exited,
-				    :$exit-code,
-				    :$signal));
+                    Failure.new(X::DRMAA::Submission::Status::Aborted.new(
+			               :id($jobout-buf.Str),
+		   		       :$exited,
+				       :$exit-code,
+				       :$signal)));
 	    }
 	    else {
                 $events.emit(
 		    DRMAA::Submission::Status::Succeded.new(
-                                    :id($jobout-buf.Str),
-                                    :$exited,
-                                    :$exit-code,
-                                    :$signal));
+                        :id($jobout-buf.Str),
+                        :$exited,
+                        :$exit-code,
+                        :$signal));
 	    }
         }
 

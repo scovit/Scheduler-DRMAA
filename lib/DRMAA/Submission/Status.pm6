@@ -7,6 +7,10 @@ class X::DRMAA::Submission::Status::Aborted is Exception {
     has Int $.exited;
     has Int $.exit-code;
     has Str $.signal;
+
+    method message(--> Str:D) {
+	"Job $.id aborted";
+    }
 }
 
 class DRMAA::Submission::Status::Succeded {
