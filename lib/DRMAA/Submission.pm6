@@ -9,14 +9,16 @@ use DRMAA::Session;
 use DRMAA::Submission::Status;
 use X::DRMAA;
 
-class DRMAA::Submission {
+class DRMAA::Submission {  # is Awaitable ? Requires v6.d, next version..
     has Str  $.job-id;
     has $.result;
+    has Supply $.events;
 
     submethod BUILD(:$job-id) {
 	$!job-id = $job-id;
 
-	DRMAA::Session.events.grep({ .id eq $!job-id }).tap: {
+	$!events = DRMAA::Session.events.grep: { .id eq $!job-id };
+	$!events.tap: {
 	    if Exception {
 		.throw;
 	    }
