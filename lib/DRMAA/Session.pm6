@@ -5,6 +5,7 @@ use NativeCall :types;
 use NativeHelpers::CBuffer;
 use DRMAA::NativeCall;
 use DRMAA::Native-specification;
+use DRMAA::Submission::Status;
 use X::DRMAA;
 
 class DRMAA::Session {
@@ -17,6 +18,13 @@ class DRMAA::Session {
         $native-specification;
     }
 
+    my $events;
+    my $done-waiter;
+
+    method events(--> Supply) {
+       $events.Supply;
+    }
+
     sub choose-native-specification($drm) {
        for @DRMAA::Native-specification::Builtin-specifications -> $module, $match {
           if ($drm ~~ $match) {
@@ -27,6 +35,114 @@ class DRMAA::Session {
              return ::($module);
           }
        }
+    }
+
+    sub job-waiting-loop {
+        my $error-buf       = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	my $jobin-buf       = DRMAA_JOB_IDS_SESSION_ANY;
+	my $jobout-buf      = CBuffer.new(DRMAA_JOBNAME_BUFFER);
+        LEAVE { $error-buf.free; $jobin-buf.free; $jobout-buf.free; }
+
+        my $rusage          = Pointer[drmaa_attr_values_t].new;
+	my int32 $error-num = 0;
+	my int32 $status    = 0;
+	my int32 $timeout   = 3;
+
+        while (defined $events) {
+            $error-num = drmaa_wait($jobin-buf, $jobout-buf,
+                                    DRMAA_JOBNAME_BUFFER, $status,
+                                    $timeout, $rusage,
+                                    $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+            if $error-num == DRMAA_ERRNO_EXIT_TIMEOUT {
+		next;
+	    }
+	    elsif $error-num == DRMAA_ERRNO_INVALID_JOB {
+		await Promise.in($timeout);
+		next;
+	    }
+
+	    my int32 $aborted   = 0;
+	    my int32 $exited    = 0;
+	    my int32 $exit-code = 0;
+	    my int32 $signaled  = 0;
+	    my Str   $signal    = Str;
+
+            if $error-num != DRMAA_ERRNO_SUCCESS {
+	        die X::DRMAA::from-code($error-num).new(:because($error-buf));
+            }
+
+            #
+            # Check if aborted
+            #
+            $error-num = drmaa_wifaborted($aborted, $status,
+                                          $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+            if $error-num != DRMAA_ERRNO_SUCCESS {
+                die X::DRMAA::from-code($error-num).new(:because($error-buf));
+            }
+
+            #                                                                                                                                                           \
+            # Check if exited
+            #
+            $error-num = drmaa_wifexited($exited, $status,
+                                         $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	    
+            if $error-num != DRMAA_ERRNO_SUCCESS {
+		die X::DRMAA::from-code($error-num).new(:because($error-buf));
+            }
+
+            if ($exited) {
+	        $error-num = drmaa_wexitstatus($exit-code, $status,
+                                               $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	        if $error-num != DRMAA_ERRNO_SUCCESS {
+                    die X::DRMAA::from-code($error-num).new(:because($error-buf));
+                }
+            }
+
+            #
+            # Check if signaled
+            #
+            $error-num = drmaa_wifsignaled($signaled, $status,
+                                           $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+            if $error-num != DRMAA_ERRNO_SUCCESS {
+                die X::DRMAA::from-code($error-num).new(:because($error-buf));
+            }
+
+            if ($signaled) {
+                my $termsig-buf = CBuffer.new(DRMAA_SIGNAL_BUFFER + 1);
+                LEAVE { $termsig-buf.free; }
+
+                $error-num = drmaa_wtermsig($termsig-buf, DRMAA_SIGNAL_BUFFER, $status,
+                                            $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+                if $error-num != DRMAA_ERRNO_SUCCESS {
+                    die X::DRMAA::from-code($error-num).new(:because($error-buf));
+                }
+
+		$signal = $termsig-buf.Str;
+	    }
+
+	    if ($aborted) {
+                $events.emit(
+                   X::DRMAA::Submission::Status::Aborted.new(
+			            :id($jobout-buf.Str),
+		   		    :$exited,
+				    :$exit-code,
+				    :$signal));
+	    }
+	    else {
+                $events.emit(
+		    DRMAA::Submission::Status::Succeded.new(
+                                    :id($jobout-buf.Str),
+                                    :$exited,
+                                    :$exit-code,
+                                    :$signal));
+	    }
+        }
     }
 
     method init(Str :$contact, DRMAA::Native-specification :native-specification(:$ns)) {
@@ -43,11 +159,20 @@ class DRMAA::Session {
 	} else {
 	    $native-specification = choose-native-specification self.DRM-system;
 	}
+
+        $events = Supplier.new;
+	$done-waiter = start { job-waiting-loop }
+
+	True
     }
 
     method exit() is export {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $error-buf.free; }
+
+	$events.done;
+	$events = Supplier;
+	await $done-waiter;
 
 	my $error-num = drmaa_exit($error-buf, DRMAA_ERROR_STRING_BUFFER);
 

@@ -16,6 +16,8 @@ Scheduler::DRMAA - Bindings for the DRMAA cluster library
 
 Scheduler::DRMAA is ...
 
+=head2 OBJECTS
+
 =head1 AUTHOR
 
 Vittore F. Scolari <vittore.scolari@pasteur.fr>
