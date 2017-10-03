@@ -11,15 +11,17 @@ use X::DRMAA;
 
 class DRMAA::Submission {
     has Str  $.job-id;
+    has $.result;
 
     submethod BUILD(:$job-id) {
 	$!job-id = $job-id;
 
-	DRMAA::Session.events.tap: { #DRMAA::Session.events.grep({ .id eq $!job-id }).tap:
-	    say .id;
-	    say "here";
-	    say "Robbo $!job-id";
-	    say $_;
+	DRMAA::Session.events.grep({ .id eq $!job-id }).tap: {
+	    if Exception {
+		.throw;
+	    }
+
+	    $!result := $_;
 	};
     }
 
