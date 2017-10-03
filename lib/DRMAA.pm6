@@ -8,7 +8,8 @@ use DRMAA::NativeCall;
 use X::DRMAA;
 use DRMAA::Job-template;
 use DRMAA::Submission;
+use DRMAA::Submission::Status;
 
-sub await (DRMAA::Submission:D $s) is export {
+multi sub await (DRMAA::Submission:D $s) is export {
     $s.result;
 }
