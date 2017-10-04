@@ -1,4 +1,4 @@
-use v6.c;
+use v6.d.PREVIEW;
 
 unit module DRMAA::Submission::Status:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 

@@ -1,4 +1,4 @@
-use v6.c;
+use v6.d.PREVIEW;
 unit module DRMAA::Session:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
 use NativeCall :types;
@@ -19,8 +19,7 @@ class DRMAA::Session {
     }
 
     my $events;
-    #    my atomicint $running = 0;
-    my Int $running = 0;
+    my atomicint $running = 0;
     my $done-waiter;
 
     method events(--> Supply) {
@@ -52,7 +51,7 @@ class DRMAA::Session {
 	my int32 $timeout   = 3;
 	my Str   $usage;
 
-        while ($running) { # ⚛$running
+        while (⚛$running) {
             $error-num = drmaa_wait($jobin-buf, $jobout-buf,
                                     DRMAA_JOBNAME_BUFFER, $status,
                                     $timeout, $rusage,
@@ -174,7 +173,7 @@ class DRMAA::Session {
 	}
 
         $events = Supplier.new;
-	$running++; # $running++⚛;
+	$running⚛++;
 	$done-waiter = start { job-waiting-loop }
 
 	True
@@ -184,7 +183,7 @@ class DRMAA::Session {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $error-buf.free; }
 
-	$running--; # $running--⚛;
+	$running⚛--;
 	await $done-waiter;
 
 	my $error-num = drmaa_exit($error-buf, DRMAA_ERROR_STRING_BUFFER);

@@ -1,4 +1,4 @@
-use v6.c;
+use v6.d.PREVIEW;
 unit module DRMAA::NativeCall:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
 # /* $Id: drmaa.h 15 2011-04-27 10:28:13Z mmamonski $ */

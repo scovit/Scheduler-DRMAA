@@ -1,3 +1,4 @@
+use v6.d.PREVIEW;
 use DRMAA::NativeCall;
 use NativeCall :types;
 use NativeHelpers::CBuffer;
