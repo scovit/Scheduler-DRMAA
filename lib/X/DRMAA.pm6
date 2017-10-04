@@ -207,6 +207,6 @@ my $codes = (
     X::DRMAA::Unknown
 );
 
-our sub from-code(Int $num --> X::DRMAA) {
+our sub from-code(Int:D $num --> X::DRMAA) {
     return $codes[$num];
 }

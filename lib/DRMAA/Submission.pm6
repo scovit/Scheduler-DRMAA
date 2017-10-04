@@ -30,6 +30,20 @@ class DRMAA::Submission does Awaitable {
 	$!done.get-await-handle;
     }
 
+    method status() {
+	my int32 $status = 0;
+	my $jobid-buf = CBuffer.new($.job-id);
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { $jobid-buf.free; $error-buf.free; };
+
+	my $error-num = drmaa_job_ps($jobid-buf, $status,
+				     $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+
+	DRMAA::Submission::Status::from-code($status);
+    }
+
     method gist {
 	"<DRMAA|$.job-id>"
     }
