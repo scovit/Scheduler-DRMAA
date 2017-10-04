@@ -32,7 +32,7 @@ class DRMAA::Submission does Awaitable {
 
     method status() {
 	my int32 $status = 0;
-	my $jobid-buf = CBuffer.new($.job-id);
+	my $jobid-buf = CBuffer.new($!job-id);
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $jobid-buf.free; $error-buf.free; };
 
@@ -43,6 +43,25 @@ class DRMAA::Submission does Awaitable {
 
 	DRMAA::Submission::Status::from-code($status);
     }
+
+    method !control(int32 $action) {
+	my $jobid-buf = CBuffer.new($!job-id);
+	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+	LEAVE { $jobid-buf.free; $error-buf.free; };
+	
+	my $error-num = drmaa_control($jobid-buf, $action,
+				      $error-buf, DRMAA_ERROR_STRING_BUFFER);
+
+	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
+
+	True;
+    }
+
+    method suspend   { self!control(DRMAA_CONTROL_SUSPEND)   }
+    method resume    { self!control(DRMAA_CONTROL_RESUME)    }
+    method hold      { self!control(DRMAA_CONTROL_HOLD)      }
+    method release   { self!control(DRMAA_CONTROL_RELEASE)   }
+    method terminate { self!control(DRMAA_CONTROL_TERMINATE) }
 
     method gist {
 	"<DRMAA|$.job-id>"
