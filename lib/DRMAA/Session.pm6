@@ -43,12 +43,14 @@ class DRMAA::Session {
         my $error-buf       = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	my $jobin-buf       = DRMAA_JOB_IDS_SESSION_ANY;
 	my $jobout-buf      = CBuffer.new(DRMAA_JOBNAME_BUFFER);
-        LEAVE { $error-buf.free; $jobin-buf.free; $jobout-buf.free; }
+	my $usage-buf       = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
+        LEAVE { $error-buf.free; $jobin-buf.free; $jobout-buf.free; $usage-buf.free; }
 
         my $rusage          = Pointer[drmaa_attr_values_t].new;
 	my int32 $error-num = 0;
 	my int32 $status    = 0;
 	my int32 $timeout   = 3;
+	my Str   $usage;
 
         while ($running) { # ⚛$running
             $error-num = drmaa_wait($jobin-buf, $jobout-buf,
@@ -128,21 +130,28 @@ class DRMAA::Session {
 		$signal = $termsig-buf.Str;
 	    }
 
+	    $usage = "";
+	    while (drmaa_get_next_attr_value($rusage.deref, $usage-buf, DRMAA_ERROR_STRING_BUFFER) == DRMAA_ERRNO_SUCCESS) {
+                $usage ~= ($usage-buf.Str ~ "\n");
+            }
+	    
 	    if ($aborted) {
                 $events.emit(
                     Failure.new(X::DRMAA::Submission::Status::Aborted.new(
 			               :id($jobout-buf.Str),
-		   		       :$exited,
+		   		       :exited($exited.Bool),
 				       :$exit-code,
-				       :$signal)));
+				       :$signal,
+				       :$usage)));
 	    }
 	    else {
                 $events.emit(
 		    DRMAA::Submission::Status::Succeded.new(
                         :id($jobout-buf.Str),
-                        :$exited,
+                        :exited($exited.Bool),
                         :$exit-code,
-                        :$signal));
+                        :$signal,
+		        :$usage));
 	    }
         }
 

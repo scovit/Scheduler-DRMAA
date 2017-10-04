@@ -11,7 +11,7 @@ use DRMAA::Submission;
 class DRMAA::Job-template {
     has drmaa_job_template_t $.jt;
 
-    method attribute(Str $name) is rw {
+    method attribute(Str:D $name) is rw {
 	my $jt = $.jt;
 	my $cached;
         Proxy.new(
@@ -44,7 +44,7 @@ class DRMAA::Job-template {
         )
     }
 
-    method vector-attribute(Str $name) is rw {
+    method vector-attribute(Str:D $name) is rw {
 	my $jt = $.jt;
 	my $cached;
         Proxy.new(
@@ -100,9 +100,9 @@ class DRMAA::Job-template {
     method wct-slimit()           is rw { given (DRMAA_WCT_SLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wd()                   is rw { given (DRMAA_WD) { LEAVE { .free }; self.attribute($_.Str) } }
 
-    submethod BUILD(:jt(:$given)) {
-	if defined($given) {
-	    $!jt = $given;
+    submethod BUILD(*%all) {
+	if defined(%all<jt>) {
+	    $!jt = %all<jt>;
 	} else {
 	    my $temp = Pointer[drmaa_job_template_t].new;
 	    $!jt = drmaa_job_template_t.new;
@@ -115,8 +115,14 @@ class DRMAA::Job-template {
 	    die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
 
 	    $!jt = $temp.deref;
-	    True
 	}
+
+	for %all.kv -> $name, $value {
+	    next if $name eq "jt";
+	    self."$name"() = $value;
+	}
+
+	True;
     }
 
     submethod DESTROY {
@@ -142,12 +148,14 @@ class DRMAA::Job-template {
 	DRMAA::Submission.new(job-id => $jobid-buf.Str)
     };
 
-    multi method run-bulk(Int $start, Int $end, Int $by --> List) {
+    # This is a bit ugly, we really want to be able to submit tasks,
+    # even if that imply using the native plugin
+    multi method run-bulk(Int:D $start, Int:D $end, Int :$by --> List) {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	my $jobid-ptr = Pointer[drmaa_job_ids_t].new;
 	LEAVE { $error-buf.free; drmaa_release_job_ids($jobid-ptr.deref) }
 
-	my $error-num = drmaa_run_bulk_jobs($jobid-ptr, $.jt, $start, $end, $by,
+	my $error-num = drmaa_run_bulk_jobs($jobid-ptr, $.jt, $start, $end, defined($by) ?? $by !! 1,
 					    $error-buf, DRMAA_ERROR_STRING_BUFFER);
 
 	die X::DRMAA::from-code($error-num).new(:because($error-buf)) if ($error-num != DRMAA_ERRNO_SUCCESS);
@@ -155,7 +163,13 @@ class DRMAA::Job-template {
 	(Seq.new($jobid-ptr.deref).map: { LEAVE { .free }; DRMAA::Submission.new(job-id => .Str) }).list.eager
     };
 
-    multi method run-bulk(Int $size --> List) {
+    multi method run-bulk(Range:D $range, Int :$by --> List) {
+	die "Not going to submit an infinite number of jobs" if $range.inifinte;
+	my ($start, $end) = $range.minmax;
+        self.run-bulk($start, $end, :$by);
+    }
+
+    multi method run-bulk(Int:D $size --> List) {
 	self.run-bulk(1, $size, 1);
     }
 }
