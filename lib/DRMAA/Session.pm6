@@ -23,19 +23,16 @@ class DRMAA::Session {
     my $done-waiter;
 
     method events(--> Supply) {
-       $events.Supply;
+	$events.Supply;
     }
 
     sub choose-native-specification($drm) {
-       for @DRMAA::Native-specification::Builtin-specifications -> $module, $match {
-          if ($drm ~~ $match) {
-             warn "Using default Native specification plugin, it sucks, please implement one for your configuration, patches are wellcome!"
-                if $module eq "DRMAA::Native-specification::Default";
-
-             require ::($module);
-             return ::($module);
-          }
-       }
+	for @DRMAA::Native-specification::Builtin-specifications -> $module, $match {
+            if ($drm ~~ $match) {
+		require ::($module);
+		return ::($module).new;
+            }
+	}
     }
 
     sub job-waiting-loop {
@@ -85,7 +82,7 @@ class DRMAA::Session {
                 die X::DRMAA::from-code($error-num).new(:because($error-buf));
             }
 
-            #                                                                                                                                                           \
+            #
             # Check if exited
             #
             $error-num = drmaa_wifexited($exited, $status,
@@ -171,6 +168,7 @@ class DRMAA::Session {
 	} else {
 	    $native-specification = choose-native-specification self.DRM-system;
 	}
+	$native-specification.init;
 
         $events = Supplier.new;
 	$running⚛++;
