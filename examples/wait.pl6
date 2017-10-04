@@ -1,8 +1,6 @@
 use DRMAA;
 
-my $remote-command = "./sleeper.sh";
-
-DRMAA::Session.init; # Error handling is automatic
+DRMAA::Session.init;
 
 say "DRMAA library was started successfully";
 
@@ -16,22 +14,21 @@ my $results = try await $submission;
 
 given $results {
     when DRMAA::Submission::Status::Succeded {
-	say 'Job ', .id, ' ended correctly!';
+	say 'Job ',          .id, ' ended correctly!';
 	say '  exited:    ', .exited;
 	say '  exit-code: ', .exit-code;
-	say '  signal:    ',   .signal;
+	say '  signal:    ', .signal;
 	say 'Usage statistics:';
-	say .usage;
+	say                  .usage;
     }
     default { # X::DRMAA::Submission::Status::Aborted is an exception
-	say 'Job ', $!.id, ' aborted!';
+	say 'Job ',          $!.id, ' aborted!';
 	say '  exited:    ', $!.exited;
 	say '  exit-code: ', $!.exit-code;
-	say '  signal:    ',   $!.signal;
+	say '  signal:    ', $!.signal;
 	say 'Usage statistics:';
-	say $!.usage;
+	say                  $!.usage;
     }
 }
 
-say "here";
 DRMAA::Session.exit;

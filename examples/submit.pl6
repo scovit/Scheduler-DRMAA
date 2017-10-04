@@ -1,6 +1,6 @@
 use DRMAA;
 
-DRMAA::Session.init; # Error handling is automatic
+DRMAA::Session.init;
 
 say "DRMAA library was started successfully";
 
