@@ -1,7 +1,58 @@
 use v6.c;
 unit module DRMAA::NativeCall:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
-# see Scheduler::DRMAA for the documentation
+# /* $Id: drmaa.h 15 2011-04-27 10:28:13Z mmamonski $ */
+# /*
+#  *  FedStage DRMAA utilities library
+#  *  Copyright (C) 2006-2008  FedStage Systems
+#  *
+#  *  This program is free software: you can redistribute it and/or modify
+#  *  it under the terms of the GNU General Public License as published by
+#  *  the Free Software Foundation, either version 3 of the License, or
+#  *  (at your option) any later version.
+#  *
+#  *  This program is distributed in the hope that it will be useful,
+#  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  *  GNU General Public License for more details.
+#  *
+#  *  You should have received a copy of the GNU General Public License
+#  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  */
+# /*
+#  * Documentation taken from:
+#  *
+#  *  Distributed Resource Management Application API C Bindings v1.0
+#  *
+#  *  Copyright (C) Global Grid Forum (2003). All Rights Reserved.
+#  *
+#  *  This document and translations of it may be copied and furnished to
+#  *  others, and derivative works that comment on or otherwise explain it
+#  *  or assist in its implementation may be prepared, copied, published
+#  *  and distributed, in whole or in part, without restriction of any kind,
+#  *  provided that the above copyright notice and this paragraph are included
+#  *  on all such copies and derivative works.  However, this document itself
+#  *  may not be modified in any way, such as by removing the copyright notice
+#  *  or references to the GGF or other organizations, except as needed for the
+#  *  purpose of developing Grid Recommendations in which case the procedures
+#  *  for copyrights defined in the GGF Document process must be followed,
+#  *  or as required to translate it into languages other than English.
+#  *
+#  *  The limited permissions granted above are perpetual and will not be
+#  *  revoked by the GGF or its successors or assigns.
+#  *  This document and the information contained herein is provided on an
+#  *  "AS IS" basis and THE GLOBAL GRID FORUM DISCLAIMS ALL WARRANTIES, EXPRESS
+#  *  OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+#  *  INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES
+#  *  OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+#  */
+
+# /**
+#  * @file drmaa.h
+#  * DRMAA interface functions.
+#  * @author Łukasz Cieśnik <lukasz.ciesnik@fedstage.com>
+#  */
+
 
 use NativeCall;
 use NativeHelpers::CBuffer;
