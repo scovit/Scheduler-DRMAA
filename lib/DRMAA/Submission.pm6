@@ -1,5 +1,4 @@
 use v6.d.PREVIEW;
-
 unit module DRMAA::Submission:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
 use NativeCall :types;
@@ -12,14 +11,14 @@ use X::DRMAA;
 class DRMAA::Submission does Awaitable {
     has Str  $.job-id;
     has Supply $.events;
-    has Promise $!done;
+    has Promise $.done;
 
-    submethod BUILD(:$job-id) {
-	$!job-id = $job-id;
-
-	$!events = DRMAA::Session.events.grep: { .id eq $!job-id };
-	$!done   = $!events.head(1).Promise; # If there would be more than one event x job,
-	                                     # this would have been just slightly more complex
+    submethod TWEAK {
+	if (defined $!job-id) {
+	    $!events = DRMAA::Session.events.grep: { .id eq $!job-id };
+	    $!done   = $!events.head(1).Promise; # If there would be more than one event x job,
+	                                         # this would have been just slightly more complex
+	}
     }
 
     method result {
@@ -28,6 +27,11 @@ class DRMAA::Submission does Awaitable {
 
     method get-await-handle(--> Awaitable::Handle) {
 	$!done.get-await-handle;
+    }
+
+    # This method accepts only one Job-template, check Job-template.after* for a more flexible API
+    method then($what) {
+	DRMAA::Session.native-specification.submission-then(self, $what);
     }
 
     method status() {

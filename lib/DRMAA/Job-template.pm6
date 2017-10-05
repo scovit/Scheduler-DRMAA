@@ -6,13 +6,14 @@ use NativeHelpers::CBuffer;
 use DRMAA::NativeCall;
 use X::DRMAA;
 use DRMAA::Submission;
+use DRMAA::Session;
 
 
 class DRMAA::Job-template {
     has drmaa_job_template_t $.jt;
 
     method attribute(Str:D $name) is rw {
-	my $jt = $.jt;
+	my $jt = $!jt;
 	my $cached;
         Proxy.new(
             FETCH => method (--> Str) {
@@ -45,7 +46,7 @@ class DRMAA::Job-template {
     }
 
     method vector-attribute(Str:D $name) is rw {
-	my $jt = $.jt;
+	my $jt = $!jt;
 	my $cached;
         Proxy.new(
             FETCH => method (--> List) {
@@ -99,6 +100,23 @@ class DRMAA::Job-template {
     method wct-hlimit()           is rw { given (DRMAA_WCT_HLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wct-slimit()           is rw { given (DRMAA_WCT_SLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wd()                   is rw { given (DRMAA_WD) { LEAVE { .free }; self.attribute($_.Str) } }
+
+    method afterany() is rw {
+	my $job-template = self;
+        my $cached = ();
+
+	Proxy.new(
+            FETCH => method (--> List) {
+		$cached;
+	    },
+            STORE => method ($after) {
+		for @$after -> $job { die X::TypeCheck.new(:got($job), :expected(DRMAA::Submission), :operation("binding"))
+				     unless $job ~~ DRMAA::Submission };
+		DRMAA::Session.native-specification.job-template-afterany($job-template, $after);
+		$cached := $after;
+	    }
+	)
+    }
 
     submethod BUILD(*%all) {
 	if defined(%all<jt>) {

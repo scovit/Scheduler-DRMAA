@@ -3,6 +3,8 @@ unit module DRMAA::Native-specification:ver<0.0.1>:auth<Vittore F Scolari (vitto
 
 role DRMAA::Native-specification {
     method init { ... };
+    method job-template-afterany($what, $after) { ... };
+    method submission-then($after, $what) { ... };
 }
 
 our @Builtin-specifications =

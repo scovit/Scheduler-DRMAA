@@ -166,7 +166,7 @@ class DRMAA::Session {
 	if (defined $ns) {
 	    $native-specification = $ns;
 	} else {
-	    $native-specification = choose-native-specification self.DRM-system;
+	    $native-specification = choose-native-specification "defat"; # self.DRM-system;
 	}
 	$native-specification.init;
 
