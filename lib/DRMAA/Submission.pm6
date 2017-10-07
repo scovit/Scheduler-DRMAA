@@ -6,6 +6,7 @@ use NativeHelpers::CBuffer;
 use DRMAA::NativeCall;
 use DRMAA::Session;
 use DRMAA::Submission::Status;
+use DRMAA::Native-specification;
 use X::DRMAA;
 
 class DRMAA::Submission does Awaitable {
@@ -29,8 +30,11 @@ class DRMAA::Submission does Awaitable {
 	$!done.get-await-handle;
     }
 
-    # This method accepts only one Job-template, check Job-template.after* for a more flexible API
+    # This method accepts only one Job-template, check Job-template.afterany for a more flexible API
     method then($what) {
+	fail X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
+	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
+
 	DRMAA::Session.native-specification.submission-then(self, $what);
     }
 

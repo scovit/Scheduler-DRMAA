@@ -1,10 +1,11 @@
 use v6.d.PREVIEW;
 unit module DRMAA::Native-specification:ver<0.0.1>:auth<Vittore F Scolari (vittore.scolari@gmail.com)>;
 
+enum DRMAA::Native-specification::Providables is export <Dependencies>; 
+
 role DRMAA::Native-specification {
     method init { ... };
-    method job-template-afterany($what, $after) { ... };
-    method submission-then($after, $what) { ... };
+    method provides(--> List) { ... };
 }
 
 our @Builtin-specifications =

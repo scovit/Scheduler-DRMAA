@@ -14,12 +14,8 @@ class DRMAA::Native-specification::Default does DRMAA::Native-specification {
 	     "patches are wellcome!\n";
     }
 
-    method job-template-afterany($what, $after) {
-	die "Default plugin cannot create dependency chains";
-    };
-
-    method submission-then(DRMAA::Submission:D $after, DRMAA::Job-template:D $what --> DRMAA::Submission) {
-	die "Default plugin cannot create dependency chains";
+    method provides(--> List) {
+	();
     }
 }
 

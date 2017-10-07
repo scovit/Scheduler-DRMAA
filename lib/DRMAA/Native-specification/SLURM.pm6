@@ -10,11 +10,24 @@ class DRMAA::Native-specification::SLURM does DRMAA::Native-specification {
     method init {
 #	say DRMAA::Session.implementation;
     }
+    
+    method provides(--> List) {
+	(Dependencies,);
+    }
 
-    method job-template-afterany(DRMAA::Job-template:D $what, $after) {
-	$what.native-specification ~= " --dependency=afterany:" ~ join(":", $after.map: { $_.job-id }) ~ " ";
+    # Dependencies
+    method job-template-after(DRMAA::Job-template:D $what, $after) {
+	$what.native-specification ~= ' --dependency=after:' ~ join(':', $after.map: { $_.job-id });
     };
-
+    method job-template-afterany(DRMAA::Job-template:D $what, $after) {
+	$what.native-specification ~= ' --dependency=afterany:' ~ join(':', $after.map: { $_.job-id });
+    };
+    method job-template-afterok(DRMAA::Job-template:D $what, $after) {
+	$what.native-specification ~= ' --dependency=afterok:' ~ join(':', $after.map: { $_.job-id });
+    };
+    method job-template-afternotok(DRMAA::Job-template:D $what, $after) {
+	$what.native-specification ~= ' --dependency=afternotok:' ~ join(':', $after.map: { $_.job-id });
+    };
     method submission-then(DRMAA::Submission:D $after, DRMAA::Job-template:D $what --> DRMAA::Submission) {
 	.job-template-afterany($what, $after);
 

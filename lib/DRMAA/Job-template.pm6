@@ -7,6 +7,7 @@ use DRMAA::NativeCall;
 use X::DRMAA;
 use DRMAA::Submission;
 use DRMAA::Session;
+use DRMAA::Native-specification;
 
 
 class DRMAA::Job-template {
@@ -101,23 +102,71 @@ class DRMAA::Job-template {
     method wct-slimit()           is rw { given (DRMAA_WCT_SLIMIT) { LEAVE { .free }; self.attribute($_.Str) } }
     method wd()                   is rw { given (DRMAA_WD) { LEAVE { .free }; self.attribute($_.Str) } }
 
-    method afterany() is rw {
-	my $job-template = self;
-        my $cached = ();
+    method after is rw {
+	die X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
+	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
 
+	my $job-template = self;
 	Proxy.new(
-            FETCH => method (--> List) {
-		$cached;
+	    FETCH => method {
+		die "after is writeonly"
 	    },
-            STORE => method ($after) {
+	    STORE => method ($after) {
 		for @$after -> $job { die X::TypeCheck.new(:got($job), :expected(DRMAA::Submission), :operation("binding"))
-				     unless $job ~~ DRMAA::Submission };
-		DRMAA::Session.native-specification.job-template-afterany($job-template, $after);
-		$cached := $after;
+				      unless $job ~~ DRMAA::Submission };
+		DRMAA::Session.native-specification.job-template-after($job-template, $after);
 	    }
 	)
     }
+    method afterany is rw {
+        die X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
+	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
 
+	my $job-template = self;
+	Proxy.new(
+	    FETCH => method {
+		die "afterany is writeonly"
+	    },
+	    STORE => method ($after) {
+		for @$after -> $job { die X::TypeCheck.new(:got($job), :expected(DRMAA::Submission), :operation("binding"))
+				      unless $job ~~ DRMAA::Submission };
+		DRMAA::Session.native-specification.job-template-afterany($job-template, $after);
+	    }
+	)
+    }
+    method afternotok is rw {
+        die X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
+	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
+
+	my $job-template = self;
+	Proxy.new(
+	    FETCH => method {
+		die "afternotok is writeonly"
+	    },
+	    STORE => method ($after) {
+		for @$after -> $job { die X::TypeCheck.new(:got($job), :expected(DRMAA::Submission), :operation("binding"))
+				      unless $job ~~ DRMAA::Submission };
+		DRMAA::Session.native-specification.job-template-aftenotok($job-template, $after);
+	    }
+	)
+    }
+    method afterok is rw {
+        die X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
+	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
+	
+	my $job-template = self;
+	Proxy.new(
+	    FETCH => method {
+		die "afterok is writeonly"
+	    },
+	    STORE => method ($after) {
+		for @$after -> $job { die X::TypeCheck.new(:got($job), :expected(DRMAA::Submission), :operation("binding"))
+				      unless $job ~~ DRMAA::Submission };
+		DRMAA::Session.native-specification.job-template-afterok($job-template, $after);
+	    }
+	)
+    }    
+    
     submethod BUILD(*%all) {
 	if defined(%all<jt>) {
 	    $!jt = %all<jt>;
@@ -166,8 +215,6 @@ class DRMAA::Job-template {
 	DRMAA::Submission.new(job-id => $jobid-buf.Str)
     };
 
-    # This is a bit ugly, we really want to be able to submit tasks,
-    # even if that imply using the native plugin
     multi method run-bulk(Int:D $start, Int:D $end, Int :$by --> List) {
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	my $jobid-ptr = Pointer[drmaa_job_ids_t].new;
