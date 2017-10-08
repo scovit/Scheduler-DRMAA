@@ -118,7 +118,7 @@ class DRMAA::Job-template {
 	    }
 	)
     }
-    method afterany is rw {
+    method afterend is rw {
         die X::NYI.new(:feature('Dependencies in ' ~ DRMAA::Session.native-specification.^name))
 	unless Dependencies ∈ DRMAA::Session.native-specification.provides;
 

@@ -12,7 +12,7 @@ my @submissions = DRMAA::Job-template.new(
                   ).run-task(10);
 
 my $submission = DRMAA::Job-template.new(
-                     :remote-command<./sleeper.sh>, :argv<10>, :afterany(@submissions)
+                     :remote-command<./sleeper.sh>, :argv<10>, :afterend(@submissions)
                   ).run;
 
 say $submission;
