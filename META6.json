@@ -3,7 +3,7 @@
     "Vittore F. Scolari"
   ],
   "build-depends" : [ ],
-  "depends" : [ ],
+  "depends" : [ "File::Temp", "NativeHelpers::CBuffer" ],
   "description" : "Bindings for the DRMAA cluster library",
   "license" : "GPL-3.0",
   "name" : "Scheduler::DRMAA",
