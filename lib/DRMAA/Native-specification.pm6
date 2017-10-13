@@ -4,7 +4,6 @@ unit module DRMAA::Native-specification:ver<0.0.1>:auth<Vittore F Scolari (vitto
 enum DRMAA::Native-specification::Providables is export <Dependencies>; 
 
 role DRMAA::Native-specification {
-    method init { ... };
     method provides(--> List) { ... };
 }
 

@@ -7,10 +7,6 @@ use DRMAA::Submission;
 use DRMAA::Job-template;
 
 class DRMAA::Native-specification::SLURM does DRMAA::Native-specification {
-    method init {
-#	say DRMAA::Session.implementation;
-    }
-    
     method provides(--> List) {
 	(Dependencies,);
     }

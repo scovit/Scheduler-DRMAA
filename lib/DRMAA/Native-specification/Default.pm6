@@ -7,7 +7,7 @@ use DRMAA::Submission;
 use DRMAA::Job-template;
 
 class DRMAA::Native-specification::Default does DRMAA::Native-specification {
-    method init {
+    submethod TWEAK {
 	warn 'WARNING, DRM-system "', DRMAA::Session.DRM-system, '" unknown', "\n",
 	     "Using default Native specification plugin, it is incomplete,\n",
 	     "please implement one for your configuration,\n",
