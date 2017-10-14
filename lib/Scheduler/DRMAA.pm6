@@ -79,7 +79,7 @@ Represents a Job template, must be constructed in order to launch one, or more j
 
   submethod BUILD(*%all)
 
-Construct the object, use it as DRMAA::Job-template.new, named parameters corresponds
+Construct the object, use it as C<DRMAA::Job-template.new>, named parameters corresponds
 to attributes and/or methods, making it straightforward to create a submission, a simple
 example:
 
