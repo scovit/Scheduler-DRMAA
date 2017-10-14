@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/scovit/Scheduler-DRMAA.svg?branch=master)](https://travis-ci.org/scovit/Scheduler-DRMAA)
+
 NAME
 ====
 
@@ -60,7 +62,7 @@ Other methods:
 
 ### DRMAA::Job-template
 
-Represents a Job template, must be constructed in order to lunch one, or more jobs
+Represents a Job template, must be constructed in order to launch one, or more jobs
 
     submethod BUILD(*%all)
 
@@ -110,7 +112,7 @@ The following are other available attributes, which are also building parameters
     start-time            (scalar)
     deadline-time         (scalar)
     duration-hlimit       (scalar)
-    duration-slimit       (scalar
+    duration-slimit       (scalar)
     wct-hlimit            (scalar)
     wct-slimit            (scalar)
     error-path            (scalar)
@@ -131,7 +133,7 @@ The following extra attributes are available if the Native-plugin implement the 
     afterok               (list)
     afternotok            (list)
 
-Queue after the start/end/success/failur of the values: which shoud be a list of `DRMAA::Submission`. To create a DRMAA::Submission out of a job name, in case it doesn't come out of a `run` method just do like this: DRMAA::Submission.new(job-id => "123456").
+Queue after the start/end/success/failur of the values: which shoud be a list of `DRMAA::Submission`. To create a `DRMAA::Submission` out of a job name, in case it doesn't come out of a `run` method just do like this: `DRMAA::Submission.new(job-id =` "123456")>.
 
 ### DRMAA::Submission
 
