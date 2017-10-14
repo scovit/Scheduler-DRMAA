@@ -133,7 +133,7 @@ The following extra attributes are available if the Native-plugin implement the 
     afterok               (list)
     afternotok            (list)
 
-Queue after the start/end/success/failur of the values: which shoud be a list of `DRMAA::Submission`. To create a `DRMAA::Submission` out of a job name, in case it doesn't come out of a `run` method just do like this: `DRMAA::Submission.new(job-id =` "123456")>.
+Queue after the start/end/success/failure of the values: which shoud be a list of `DRMAA::Submission`. To create a `DRMAA::Submission` out of a job name, in case it doesn't come out of a `run` method just do like this: `DRMAA::Submission.new(:job-id("123456"))`.
 
 ### DRMAA::Submission
 

@@ -151,9 +151,9 @@ required functionality:
   afterok               (list)
   afternotok            (list)
 
-Queue after the start/end/success/failur of the values: which shoud be a list of C<DRMAA::Submission>.
+Queue after the start/end/success/failure of the values: which shoud be a list of C<DRMAA::Submission>.
 To create a C<DRMAA::Submission> out of a job name, in case it doesn't come out of a C<run> method
-just do like this: C<DRMAA::Submission.new(job-id => "123456")>.
+just do like this: C<DRMAA::Submission.new(:job-id("123456"))>.
 
 =head3 DRMAA::Submission
 
