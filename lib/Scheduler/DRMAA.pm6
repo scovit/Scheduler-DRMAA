@@ -13,6 +13,9 @@ Scheduler::DRMAA - Bindings for the DRMAA cluster library
   use DRMAA;             # Loads the high-level bindings
   use DRMAA::NativeCall; # Loads the C binings
 
+The C<libdrmaa.so> library needs to be installed in the loader path, or
+the directory added to C<LD_LIBRARY_PATH> environment variable.
+  
 =head1 DESCRIPTION
 
 Scheduler::DRMAA are the Perl 6 bindings for the DRMAA library. You can use

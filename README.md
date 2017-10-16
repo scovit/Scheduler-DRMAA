@@ -11,6 +11,8 @@ SYNOPSIS
     use DRMAA;             # Loads the high-level bindings
     use DRMAA::NativeCall; # Loads the C binings
 
+The `libdrmaa.so` library needs to be installed in the loader path, or the directory added to `LD_LIBRARY_PATH` environment variable.
+
 DESCRIPTION
 ===========
 

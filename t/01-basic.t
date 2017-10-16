@@ -1,6 +1,6 @@
 use v6.c;
 use Test;
-use Scheduler::DRMAA;
+use DRMAA;
 
 pass "replace me";
 
