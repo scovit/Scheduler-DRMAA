@@ -203,7 +203,7 @@ class DRMAA::Job-template {
 		  " in $tempdir directory");
 
 	self.remote-command($*EXECUTABLE);
-	self.argv(($filename, $@*ARGS));
+	self.argv(($filename, |@*ARGS));
 	self.env(%*ENV.kv.rotor(2).map: { .join("=") });
     };
     
