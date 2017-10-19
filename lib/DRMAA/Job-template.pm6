@@ -191,20 +191,27 @@ class DRMAA::Job-template {
 	DRMAA::Session.native-specification.job-template-afterok(self, $after);
     }
     
-    method script(Str:D $script, :$tempdir = './.drmaa_scripts') {
+    method script(Str:D $script, :$tempdir = './.drmaa_scripts' --> Str) {
+	use nqp;
+
 	mkdir $tempdir unless $tempdir.IO.d;
 
-	my $filename; { use nqp; $filename = "$tempdir/" ~ nqp::sha1($script); }
+	my $filename = nqp::sha1($script);
+	my $fullname = "$tempdir/$filename";
 
-	spurt $filename, $script;
-	$filename.IO.chmod: 0o700;
+	unless $fullname.IO.f && (nqp::sha1(slurp($fullname)) eq $filename) {
+	    spurt $fullname, $script;
+	    $fullname.IO.chmod: 0o700;
 
-	$*ERR.say("File {$filename.IO.basename} created and stored", 
-		  " in $tempdir directory");
+	    $*ERR.say("File $filename created and stored", 
+		      " in $tempdir directory");
+	}
 
 	self.remote-command($*EXECUTABLE);
-	self.argv(($filename, |@*ARGS));
+	self.argv(($fullname, |@*ARGS));
 	self.env(%*ENV.kv.rotor(2).map: { .join("=") });
+
+	$fullname
     };
     
     submethod BUILD(*%all) {
