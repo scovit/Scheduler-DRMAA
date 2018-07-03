@@ -144,7 +144,7 @@ class DRMAA::Session {
     }
 
     method init(Str :$contact, DRMAA::Native-specification :native-specification(:$ns)) {
-	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :init($contact));
+	my $contact-buf = CBuffer.new(DRMAA_CONTACT_BUFFER, :with($contact));
 	my $error-buf = CBuffer.new(DRMAA_ERROR_STRING_BUFFER);
 	LEAVE { $contact-buf.free; $error-buf.free; }
 
